@@ -1,4 +1,5 @@
 import sys
+import array
 
 # Works in linear time!
 # 1st Quora challenge on this page:https://www.quora.com/about/challenges (upvotes)
@@ -18,7 +19,7 @@ def _fillForwardArray(k, pos, array):
 	'''
 	array[pos - 1] = 0
 	for back_pos in range(pos - 2, -1, -1):
-		if not array[back_pos] == None:
+		if not array[back_pos] == -1:
 			return array
 		array[back_pos] = min(k - 1, array[back_pos + 1] + 1)
 	return array
@@ -45,31 +46,32 @@ def _parseArray(k, numbers):
 	non_increasing_backward = []
 
 	# Initialize arrays
-
+	'''
 	for pos in range(0, n):
 		non_decreasing_forward.append(None)
-		non_decreasing_backward.append(None)
 		non_increasing_forward.append(None)
-		non_increasing_backward.append(None)
+	'''
+	non_decreasing_forward = array.array('i',(-1,)*n)
+	non_increasing_forward = array.array('i',(-1,)*n)
 
 	# The backward arrays start with 0
 
-	non_decreasing_backward[0] = 0
-	non_increasing_backward[0] = 0
+	non_decreasing_backward.append(0)
+	non_increasing_backward.append(0)
 
 	for pos in range(1, n):
 		# Fill the backward array by checking if an element is greater than or equal to the element before it
 		if numbers[pos] >= numbers[pos - 1]:
-			non_decreasing_backward[pos] = min(k - 1, non_decreasing_backward[pos - 1] + 1)
+			non_decreasing_backward.append(min(k - 1, non_decreasing_backward[pos - 1] + 1))
 		else:
-			non_decreasing_backward[pos] = 0
+			non_decreasing_backward.append(0)
 			# At the end of a subrange, note the position and fill the forward array up to there by moving backward
 			non_decreasing_forward = _fillForwardArray(k, pos, non_decreasing_forward)			
 		# Do that again for the non-increasing array
 		if numbers[pos] <= numbers[pos - 1]:
-			non_increasing_backward[pos] = min(k -1, non_increasing_backward[pos - 1] + 1)
+			non_increasing_backward.append(min(k -1, non_increasing_backward[pos - 1] + 1))
 		else:
-			non_increasing_backward[pos] = 0
+			non_increasing_backward.append(0)
 			non_increasing_forward = _fillForwardArray(k, pos, non_increasing_forward)
 	non_decreasing_forward = _fillForwardArray(k, n, non_decreasing_forward)
 	non_increasing_forward = _fillForwardArray(k, n, non_increasing_forward)
