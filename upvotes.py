@@ -17,14 +17,6 @@ def _fillForwardArray(k, pos, sub_count):
 	Return value:
 		d (collections.deque[int]): the list of new values to be added to the forward lists
 	'''
-	'''
-	array[pos - 1] = 0
-	for back_pos in range(pos - 2, -1, -1):
-		if not array[back_pos] == -1:
-			return array
-		array[back_pos] = min(k - 1, array[back_pos + 1] + 1)
-	return array
-	'''
 	temp_d = deque()
 	for i in range(0, sub_count + 1):
 		temp_d.appendleft(min(k - 1, i))
