@@ -100,7 +100,11 @@ def _getResult(k, non_decreasing_forward, non_decreasing_backward, non_increasin
 	# Get result of the first window by summing the backward arrays
 	result.append(sum(non_decreasing_backward[:k]) - sum(non_increasing_backward[:k]))
 	for i in range(0, len(non_decreasing_backward) - k - 1):
-		new_result = result[i] - non_decreasing_forward[i] + non_decreasing_backward[i + k ] - (non_increasing_forward[i] + non_increasing_backward[i + k])
+		'''
+		print 'Result arithmetic:'
+		print result[i], '-', non_decreasing_forward[i], '+', non_decreasing_backward[i + k ], '+', non_increasing_forward[i], '-', non_increasing_backward[i + k], ''
+		'''
+		new_result = result[i] - non_decreasing_forward[i] + non_decreasing_backward[i + k ] + non_increasing_forward[i] - non_increasing_backward[i + k]
 		result.append(new_result)
 	return result
 
@@ -129,6 +133,13 @@ def upvotes(k, numbers):
 	'''
 	# Create non-decreasing and non-increasing arrays
 	[non_decreasing_forward, non_decreasing_backward, non_increasing_forward, non_increasing_backward] = _parseArray(k, numbers)
+	'''
+	print 'Helping arrays:'
+	print non_decreasing_forward
+	print non_decreasing_backward
+	print non_increasing_forward
+	print non_decreasing_backward
+	'''
 	# Calculate value of each window
 	result = _getResult(k, non_decreasing_forward, non_decreasing_backward, non_increasing_forward, non_increasing_backward)
 	# Output result through stdout
