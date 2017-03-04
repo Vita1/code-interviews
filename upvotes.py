@@ -1,10 +1,11 @@
 import sys
-import array
+from collections import deque
 
 # Works in linear time!
 # 1st Quora challenge on this page:https://www.quora.com/about/challenges (upvotes)
 
-def _fillForwardArray(k, pos, array):
+
+def _fillForwardArray(k, pos, sub_count):
 	'''
 	_fillForwardArray
 	Helper function for filling out the forward lists in _parseArray. Take the position of the end of a decreasing or
@@ -13,9 +14,9 @@ def _fillForwardArray(k, pos, array):
 	Arguments:
 		k (int, k > 0): the window size
 		pos (int, 0 < pos < len(array)): the position after the position to be filled from 
-		array (list[int]): the list to be updated
 	Return value:
-		array (list[int]): the list after all the values have been filled up to pos
+		d (collections.deque[int]): the list of new values to be added to the forward lists
+	'''
 	'''
 	array[pos - 1] = 0
 	for back_pos in range(pos - 2, -1, -1):
@@ -23,6 +24,12 @@ def _fillForwardArray(k, pos, array):
 			return array
 		array[back_pos] = min(k - 1, array[back_pos + 1] + 1)
 	return array
+	'''
+	temp_d = deque()
+	for i in range(0, sub_count + 1):
+		temp_d.appendleft(min(k - 1, i))
+	return temp_d
+
 
 def _parseArray(k, numbers):
 	'''
@@ -45,36 +52,38 @@ def _parseArray(k, numbers):
 	non_increasing_forward = []
 	non_increasing_backward = []
 
-	# Initialize arrays
-	'''
-	for pos in range(0, n):
-		non_decreasing_forward.append(None)
-		non_increasing_forward.append(None)
-	'''
-	non_decreasing_forward = array.array('i',(-1,)*n)
-	non_increasing_forward = array.array('i',(-1,)*n)
+	# Initialize the forward arrays
+	non_decreasing_forward = deque()
+	non_increasing_forward = deque()
 
 	# The backward arrays start with 0
 
 	non_decreasing_backward.append(0)
 	non_increasing_backward.append(0)
 
+	sub_count_i = 0
+	sub_count_d = 0
+
 	for pos in range(1, n):
 		# Fill the backward array by checking if an element is greater than or equal to the element before it
 		if numbers[pos] >= numbers[pos - 1]:
 			non_decreasing_backward.append(min(k - 1, non_decreasing_backward[pos - 1] + 1))
+			sub_count_d += 1
 		else:
 			non_decreasing_backward.append(0)
 			# At the end of a subrange, note the position and fill the forward array up to there by moving backward
-			non_decreasing_forward = _fillForwardArray(k, pos, non_decreasing_forward)			
+			non_decreasing_forward.extend(_fillForwardArray(k, pos, sub_count_d))
+			sub_count_d = 0		
 		# Do that again for the non-increasing array
 		if numbers[pos] <= numbers[pos - 1]:
 			non_increasing_backward.append(min(k -1, non_increasing_backward[pos - 1] + 1))
+			sub_count_i += 1
 		else:
 			non_increasing_backward.append(0)
-			non_increasing_forward = _fillForwardArray(k, pos, non_increasing_forward)
-	non_decreasing_forward = _fillForwardArray(k, n, non_decreasing_forward)
-	non_increasing_forward = _fillForwardArray(k, n, non_increasing_forward)
+			non_increasing_forward.extend(_fillForwardArray(k, pos, sub_count_i))
+			sub_count_i = 0
+	non_decreasing_forward.extend(_fillForwardArray(k, n, sub_count_d))
+	non_increasing_forward.extend(_fillForwardArray(k, n, sub_count_i))
 
 	# Add another element of 0 to each array to prevent index out of bound error later
 
@@ -102,11 +111,7 @@ def _getResult(k, non_decreasing_forward, non_decreasing_backward, non_increasin
 	# Get result of the first window by summing the backward arrays
 	result.append(sum(non_decreasing_backward[:k]) - sum(non_increasing_backward[:k]))
 	for i in range(0, len(non_decreasing_backward) - k - 1):
-		'''
-		print 'Result arithmetic:'
-		print result[i], '-', non_decreasing_forward[i], '+', non_decreasing_backward[i + k ], '+', non_increasing_forward[i], '-', non_increasing_backward[i + k], ''
-		'''
-		new_result = result[i] - non_decreasing_forward[i] + non_decreasing_backward[i + k ] + non_increasing_forward[i] - non_increasing_backward[i + k]
+		new_result = result[i] - non_decreasing_forward.popleft() + non_decreasing_backward[i + k ] + non_increasing_forward.popleft() - non_increasing_backward[i + k]
 		result.append(new_result)
 	return result
 
@@ -135,13 +140,6 @@ def upvotes(k, numbers):
 	'''
 	# Create non-decreasing and non-increasing arrays
 	[non_decreasing_forward, non_decreasing_backward, non_increasing_forward, non_increasing_backward] = _parseArray(k, numbers)
-	'''
-	print 'Helping arrays:'
-	print non_decreasing_forward
-	print non_decreasing_backward
-	print non_increasing_forward
-	print non_decreasing_backward
-	'''
 	# Calculate value of each window
 	result = _getResult(k, non_decreasing_forward, non_decreasing_backward, non_increasing_forward, non_increasing_backward)
 	# Output result through stdout
